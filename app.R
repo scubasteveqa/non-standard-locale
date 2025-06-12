@@ -20,15 +20,18 @@ ui <- page_fluid(
       verbatimTextOutput("date_format"),
       
       h4("Number Formatting (varies by locale)"),
-      # Added div with id for easier selection
       div(id = "number-format-section",
         verbatimTextOutput("number_format")
       ),
       
       h4("String Sorting/Collation (varies by locale)"),
-      # Added div with id for easier selection
       div(id = "string-sort-section",
-        verbatimTextOutput("string_sort")
+        # Breaking the output into multiple, more targeted outputs
+        h5(id = "string-sort-heading", "Japanese and Special Characters"),
+        verbatimTextOutput("string_sort_japanese"),
+        
+        h5(id = "case-sort-heading", "Case Sensitivity Test"),
+        verbatimTextOutput("string_sort_case")
       )
     )
   ),
@@ -95,29 +98,44 @@ server <- function(input, output, session) {
     cat("NUMBER_FORMAT_TEST_END\n")
   })
   
-  output$string_sort <- renderPrint({
-    # Added unique identifier for playwright
-    cat("STRING_SORT_TEST_START\n")
-    
-    # String collation (sorting) varies by locale
-    # Japanese characters should sort differently in Japanese locale vs C locale
-    
+  # Split the string sorting output into two separate outputs
+  output$string_sort_japanese <- renderPrint({
     # Create some text with special characters to sort
     words <- c("あ", "い", "う", "え", "お", "か", "き", "く", "け", "こ", 
                "A", "B", "C", "Ä", "Z", "é", "ß")
     
-    cat("Original list:\n")
-    print(words)
+    cat("Japanese Kana and Special Characters Sorting Test\n")
+    cat("==============================================\n\n")
     
-    cat("\nSorted list (should reflect locale-specific collation rules):\n")
-    print(sort(words))
+    cat("Original Japanese and special characters list:\n")
+    for (i in seq_along(words)) {
+      cat(sprintf("Item %d: %s\n", i, words[i]))
+    }
+    
+    cat("\nSorted Japanese and special characters list:\n")
+    sorted_words <- sort(words)
+    for (i in seq_along(sorted_words)) {
+      cat(sprintf("Sorted item %d: %s\n", i, sorted_words[i]))
+    }
+  })
+  
+  output$string_sort_case <- renderPrint({
+    cat("Case Sensitivity Sorting Test\n")
+    cat("===========================\n\n")
     
     # Test if case sensitivity in sorting is affected by locale
-    cat("\nSorting with different case (case sensitivity varies by locale):\n")
     mixed_case <- c("a", "A", "b", "B", "c", "C", "z", "Z")
-    print(sort(mixed_case))
     
-    cat("STRING_SORT_TEST_END\n")
+    cat("Original mixed case list:\n")
+    for (i in seq_along(mixed_case)) {
+      cat(sprintf("Case item %d: %s\n", i, mixed_case[i]))
+    }
+    
+    cat("\nSorted mixed case list (case sensitivity varies by locale):\n")
+    sorted_mixed <- sort(mixed_case)
+    for (i in seq_along(sorted_mixed)) {
+      cat(sprintf("Sorted case item %d: %s\n", i, sorted_mixed[i]))
+    }
   })
 }
 
